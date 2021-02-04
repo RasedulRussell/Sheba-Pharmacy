@@ -1,5 +1,6 @@
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -122,8 +123,18 @@ public class Drug extends javax.swing.JFrame {
             float perPrice = price/quantity;
         try {
             Statement st = connection.createStatement();
-            String query = "insert into drug values('" + drugName + "'," + quantity + "," + perPrice + ")";
-            st.executeQuery(query);
+            String checkQuery = "select * from drug where name = '" + drugName + "'";
+            ResultSet rs = st.executeQuery(checkQuery);
+            if(rs.next()){
+                int val = rs.getInt("quantity");
+                val = val + quantity;
+                System.out.print(val);
+                String update = "update drug set quantity = " + val + ", price = " + perPrice + " where name = '" + drugName + "'";
+                st.executeQuery(update);
+            }else{
+                String query = "insert into drug values('" + drugName + "'," + quantity + "," + perPrice + ")";
+                st.executeQuery(query);
+            }
             JOptionPane.showMessageDialog(null,"Drug Added");
             DrugName.setText("");
             Price.setText("");

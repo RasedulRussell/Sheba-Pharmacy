@@ -108,8 +108,6 @@ public class LogInForm extends javax.swing.JFrame {
     private void LogInActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LogInActionPerformed
         userName = UserName.getText();
         password = PasswordField.getText();
-        ResultSet rs1 = null;
-        ResultSet rs2 = null;
         try {
             Statement st = connection.createStatement();
             String query = "select * from useraccount where username= '" + userName + "' and password='"+
@@ -125,7 +123,7 @@ public class LogInForm extends javax.swing.JFrame {
                             password + "' and act=2";
                 rs = st.executeQuery(query);
                 if(rs.next()){
-                    Memo memo = new Memo();
+                    Memo memo = new Memo(connection);
                     this.setVisible(false);
                     memo.setVisible(true);
                 }else{
@@ -133,7 +131,6 @@ public class LogInForm extends javax.swing.JFrame {
                     UserName.setText("");
                     PasswordField.setText("");
                 }
-                
             }
         } catch (SQLException ex) {
             Logger.getLogger(LogInForm.class.getName()).log(Level.SEVERE, null, ex);

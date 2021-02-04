@@ -13,7 +13,6 @@ public class ManagerFrame extends javax.swing.JFrame {
         initComponents();
         this.connection = connection;
     }
-
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -22,7 +21,7 @@ public class ManagerFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         AddDrug = new javax.swing.JButton();
-        UpdateDrug = new javax.swing.JButton();
+        List = new javax.swing.JButton();
         Exit = new javax.swing.JButton();
         AddWorkers = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -46,10 +45,15 @@ public class ManagerFrame extends javax.swing.JFrame {
         jPanel1.add(AddDrug);
         AddDrug.setBounds(50, 300, 107, 47);
 
-        UpdateDrug.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        UpdateDrug.setText("Update");
-        jPanel1.add(UpdateDrug);
-        UpdateDrug.setBounds(290, 300, 107, 47);
+        List.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        List.setText("List");
+        List.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ListActionPerformed(evt);
+            }
+        });
+        jPanel1.add(List);
+        List.setBounds(290, 300, 107, 47);
 
         Exit.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         Exit.setText("Exit");
@@ -109,6 +113,10 @@ public class ManagerFrame extends javax.swing.JFrame {
         drug.setVisible(true);
     }//GEN-LAST:event_AddDrugActionPerformed
 
+    private void ListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ListActionPerformed
+            
+    }//GEN-LAST:event_ListActionPerformed
+
     public void setOwn( Connection con){
         System.out.println("setOwn");
         connection = con;
@@ -118,7 +126,7 @@ public class ManagerFrame extends javax.swing.JFrame {
     private javax.swing.JButton AddDrug;
     private javax.swing.JButton AddWorkers;
     private javax.swing.JButton Exit;
-    private javax.swing.JButton UpdateDrug;
+    private javax.swing.JButton List;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

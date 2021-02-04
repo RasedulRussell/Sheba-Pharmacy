@@ -1,10 +1,20 @@
 
+import com.itextpdf.text.DocumentException;
+import java.awt.Color;
+import java.io.FileNotFoundException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author RasedulRussell
- * 
+ *
  */
 public class Memo extends javax.swing.JFrame {
 
@@ -13,10 +23,14 @@ public class Memo extends javax.swing.JFrame {
      */
     private String drugName;
     private int quantity;
-    public Memo() {
+    private Connection connection = null;
+    private ArrayList<MedicineSell> pres = new ArrayList<>();
+
+    public Memo(Connection connection) {
+        this.connection = connection;
         initComponents();
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -33,6 +47,7 @@ public class Memo extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         Exit = new javax.swing.JButton();
+        Cancel = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -65,6 +80,11 @@ public class Memo extends javax.swing.JFrame {
 
         Done.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         Done.setText("Done");
+        Done.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DoneActionPerformed(evt);
+            }
+        });
         jPanel1.add(Done);
         Done.setBounds(440, 390, 109, 44);
 
@@ -109,7 +129,17 @@ public class Memo extends javax.swing.JFrame {
             }
         });
         jPanel1.add(Exit);
-        Exit.setBounds(260, 390, 109, 44);
+        Exit.setBounds(910, 530, 109, 44);
+
+        Cancel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        Cancel.setText("cancel");
+        Cancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CancelActionPerformed(evt);
+            }
+        });
+        jPanel1.add(Cancel);
+        Cancel.setBounds(260, 390, 109, 44);
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel5.setIcon(new javax.swing.ImageIcon("C:\\Users\\USER\\Documents\\bigstock.jpg")); // NOI18N
@@ -123,38 +153,91 @@ public class Memo extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void QuantityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QuantityActionPerformed
-            
+
     }//GEN-LAST:event_QuantityActionPerformed
 
     private void AddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddActionPerformed
         drugName = DrugName.getText();
-        boolean flag = false;
-        if(drugName == null){
-            flag = true;
-        }
-        if(Quantity.getText() == null){
-            flag = true;
-        }else{
-            quantity = Integer.parseInt(Quantity.getText());
-        }
-        if(flag){
+        if (drugName.isEmpty()) {
             JOptionPane.showMessageDialog(null, "invalid drugName");
+            return;
+        }
+
+        if (Quantity.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "invalid quantity");
+            return;
+        }
+        quantity = Integer.parseInt(Quantity.getText());
+
+        try {
+            Statement st = connection.createStatement();
+            String query = "select * from drug where name='" + drugName + "'";
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                int qun = rs.getInt("QUANTITY");
+                float price = rs.getInt("price");
+                System.out.println("quantity " + qun);
+                if (quantity > qun) {
+                    JOptionPane.showMessageDialog(null, "Not enough Drugs, Contain = " + qun);
+                } else {
+                    MedicineSell mSell = new MedicineSell(drugName, price, quantity, quantity * price);
+                    pres.add(mSell);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Drug must be Add");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Memo.class.getName()).log(Level.SEVERE, null, ex);
         }
         DrugName.setText(null);
         Quantity.setText(null);
     }//GEN-LAST:event_AddActionPerformed
 
     private void DrugNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DrugNameActionPerformed
-        
+
     }//GEN-LAST:event_DrugNameActionPerformed
 
     private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_ExitActionPerformed
 
+    private void CancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelActionPerformed
+        pres.clear();
+    }//GEN-LAST:event_CancelActionPerformed
+
+    private void DoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DoneActionPerformed
+        pres.forEach(pre -> {
+            try {
+                Statement st = connection.createStatement();
+                int qun = pre.Quantity;
+                String query = "select quantity from drug where name = '" + pre.Name + "'";
+                ResultSet rs = st.executeQuery(query);
+                rs.next();
+                int preQuantity = rs.getInt("quantity");
+                System.out.println(preQuantity + " " + qun);
+                // update drug SET quantity = 1000 where name = 'Nimocon-500mg'
+                int val = preQuantity - qun;
+                query = "update drug set quantity = " + val + " where name = '" + pre.Name + "'";
+                st.executeQuery(query);
+            } catch (SQLException ex) {
+                Logger.getLogger(Memo.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        PDFWriter writer = new PDFWriter(pres);
+        try {
+            writer.WritePdf("name.pdf", pres.size());
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Memo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DocumentException ex) {
+            Logger.getLogger(Memo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        pres.clear();
+    }//GEN-LAST:event_DoneActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Add;
+    private javax.swing.JButton Cancel;
     private javax.swing.JButton Done;
     private javax.swing.JTextField DrugName;
     private javax.swing.JButton Exit;
